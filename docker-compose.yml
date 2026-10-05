@@ -24,7 +24,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: gestion-backend:latest
+    image: ${REGISTRY:-localhost:5000}/gestion-backend:${IMAGE_TAG:-latest}
     container_name: gestion-backend
     restart: unless-stopped
     environment:
@@ -44,7 +44,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    image: gestion-frontend:latest
+    image: ${REGISTRY:-localhost:5000}/gestion-frontend:${IMAGE_TAG:-latest}
     container_name: gestion-frontend
     restart: unless-stopped
     ports:

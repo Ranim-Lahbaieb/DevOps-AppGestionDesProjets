@@ -1,5 +1,6 @@
 package tn.esprit.backend.service.impl;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import tn.esprit.backend.entity.Entreprise;
@@ -52,16 +53,16 @@ public class EquipeServiceImpl implements IEquipeService {
 
     @Override
     public Equipe assignEquipeToEntreprise(Long equipeId, Long entrepriseId) {
-        Equipe equipe = equipeRepository.findById(equipeId).orElse(null);
-        Entreprise entreprise = entrepriseRepository.findById(entrepriseId).orElse(null);
+        Equipe equipe = equipeRepository.findById(equipeId).orElseThrow(() -> new EntityNotFoundException("Equipe introuvable : " + equipeId));
+        Entreprise entreprise = entrepriseRepository.findById(entrepriseId).orElseThrow(() -> new EntityNotFoundException("Entreprise introuvable : " + entrepriseId));
         equipe.setEntreprise(entreprise);
         return equipeRepository.save(equipe);
     }
 
     @Override
     public Equipe assignEquipeToProjet(Long equipeId, Long projetId) {
-        Equipe equipe = equipeRepository.findById(equipeId).orElse(null);
-        Projet projet = projetRepository.findById(projetId).orElse(null);
+        Equipe equipe = equipeRepository.findById(equipeId).orElseThrow(() -> new EntityNotFoundException("Equipe introuvable : " + equipeId));
+        Projet projet = projetRepository.findById(projetId).orElseThrow(() -> new EntityNotFoundException("Projet introuvable : " + projetId));
         equipe.getProjets().add(projet);
         return equipeRepository.save(equipe);
     }

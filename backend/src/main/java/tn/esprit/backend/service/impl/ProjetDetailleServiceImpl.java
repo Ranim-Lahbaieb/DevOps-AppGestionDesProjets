@@ -1,5 +1,6 @@
 package tn.esprit.backend.service.impl;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import tn.esprit.backend.entity.Projet;
@@ -49,8 +50,8 @@ public class ProjetDetailleServiceImpl implements IProjetDetailleService {
 
     @Override
     public ProjetDetaille assignProjetDetailleToProjet(Long projetDetailleId, Long projetId) {
-        ProjetDetaille projetDetaille = projetDetailleRepository.findById(projetDetailleId).orElse(null);
-        Projet projet = projetRepository.findById(projetId).orElse(null);
+        ProjetDetaille projetDetaille = projetDetailleRepository.findById(projetDetailleId).orElseThrow(() -> new EntityNotFoundException("ProjetDetaille introuvable : " + projetDetailleId));
+        Projet projet = projetRepository.findById(projetId).orElseThrow(() -> new EntityNotFoundException("Projet introuvable : " + projetId));
         projetDetaille.setProjet(projet);
         return projetDetailleRepository.save(projetDetaille);
     }
