@@ -1,4 +1,3 @@
-cat > Jenkinsfile <<'__FIN__'
 // =====================================================================
 //  Pipeline CI/CD - Gestion des projets (Spring Boot + Angular + MySQL)
 //
@@ -353,4 +352,3 @@ def pousserImages() {
         done
     '''
 }
-__FIN__
