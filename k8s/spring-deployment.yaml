@@ -34,8 +34,8 @@ spec:
     spec:
       containers:
         - name: spring
-          image: gestion-backend:latest
-          imagePullPolicy: Never
+          image: docker.io/lahbaieb/gestion-backend:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           envFrom:
