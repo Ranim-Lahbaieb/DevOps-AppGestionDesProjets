@@ -16,8 +16,11 @@ pipeline {
     parameters {
         booleanParam(name: 'ANALYSE_FRONTEND', defaultValue: true,
                      description: 'Analyser aussi le frontend Angular (informatif, non bloquant)')
-        booleanParam(name: 'DEPLOY', defaultValue: true,
-                     description: 'Deployer la stack avec docker compose apres le push')
+        booleanParam(name: 'DEPLOY', defaultValue: false,
+             description: 'Deployer avec Docker Compose')
+
+booleanParam(name: 'DEPLOY_K8S', defaultValue: true,
+             description: 'Deployer automatiquement sur Kubernetes')
     }
 
     environment {
@@ -32,8 +35,8 @@ pipeline {
         // --- Registry ---
         // Registry local. Pour Docker Hub : REGISTRY = 'docker.io/<ton_compte>'
         // et REGISTRY_CREDS = '<id du credential Jenkins "Username with password">'
-        REGISTRY       = 'localhost:5000'
-        REGISTRY_CREDS = ''
+        REGISTRY       = 'docker.io/lahbaieb'
+        REGISTRY_CREDS = 'dockerhub-credentials'
     }
 
     options {
@@ -255,7 +258,7 @@ pipeline {
                                 withCredentials([usernamePassword(credentialsId: env.REGISTRY_CREDS,
                                                                   usernameVariable: 'REG_USER',
                                                                   passwordVariable: 'REG_PASS')]) {
-                                    sh 'echo "$REG_PASS" | docker login "${REGISTRY%%/*}" -u "$REG_USER" --password-stdin'
+                                    sh 'echo "$REG_PASS" | docker login -u "$REG_USER" --password-stdin'
                                     pousserImages()
                                 }
                             } else {
@@ -316,6 +319,36 @@ pipeline {
                         '''
                     }
                 }
+            }
+        }
+        // =============================================================
+        //  7. DEPLOIEMENT AUTOMATIQUE SUR KUBERNETES
+        // =============================================================
+        stage('7. Deploiement Kubernetes') {
+            when { expression { params.DEPLOY_K8S } }
+
+            steps {
+                sh '''
+                    set -eu
+
+                    echo "=== Mise a jour du backend Spring Boot ==="
+                    kubectl -n devops set image deployment/spring \
+                        spring="$REGISTRY/gestion-backend:$BUILD_NUMBER"
+
+                    echo "=== Mise a jour du frontend Angular ==="
+                    kubectl -n devops set image deployment/frontend \
+                        frontend="$REGISTRY/gestion-frontend:$BUILD_NUMBER"
+
+                    echo "=== Attente du deploiement ==="
+                    kubectl -n devops rollout status deployment/spring --timeout=300s
+                    kubectl -n devops rollout status deployment/frontend --timeout=300s
+
+                    echo "=== Verification des pods ==="
+                    kubectl get pods -n devops
+
+                    echo "=== Verification des services ==="
+                    kubectl get services -n devops
+                '''
             }
         }
     }
